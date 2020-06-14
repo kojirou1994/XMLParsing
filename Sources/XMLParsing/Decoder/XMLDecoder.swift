@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreFoundation
 
 //===----------------------------------------------------------------------===//
 // XML Decoder
@@ -129,7 +130,7 @@ open class XMLDecoder {
             guard !stringKey.isEmpty else { return stringKey }
             
             // Find the first non-underscore character
-            guard let firstNonUnderscore = stringKey.index(where: { $0 != "_" }) else {
+            guard let firstNonUnderscore = stringKey.firstIndex(where: { $0 != "_" }) else {
                 // Reached the end without finding an _
                 return stringKey
             }
@@ -144,7 +145,7 @@ open class XMLDecoder {
             let leadingUnderscoreRange = stringKey.startIndex..<firstNonUnderscore
             let trailingUnderscoreRange = stringKey.index(after: lastNonUnderscore)..<stringKey.endIndex
             
-            var components = stringKey[keyRange].split(separator: "_")
+            let components = stringKey[keyRange].split(separator: "_")
             let joinedString : String
             if components.count == 1 {
                 // No underscores in key, leave the word as is - maybe already camel cased
@@ -216,7 +217,7 @@ open class XMLDecoder {
     /// - returns: A value of the requested type.
     /// - throws: `DecodingError.dataCorrupted` if values requested from the payload are corrupted, or if the given data is not valid XML.
     /// - throws: An error if any value throws an error during decoding.
-    open func decode<T : Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    open func decode<T : Decodable>(_ type: T.Type = T.self, from data: Data) throws -> T {
         let topLevel: [String: Any]
         do {
             topLevel = try _XMLStackParser.parse(with: data)
@@ -424,7 +425,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -447,7 +448,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -470,7 +471,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -493,7 +494,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -516,7 +517,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -539,7 +540,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -562,7 +563,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -585,7 +586,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -608,7 +609,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -631,7 +632,7 @@ extension _XMLDecoder {
         
         let number = NSNumber(value: value)
         
-        guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+        guard !number.isCFBoolean else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         
@@ -651,7 +652,7 @@ extension _XMLDecoder {
         if let value = Double(string) {
             let number = NSNumber(value: value)
             
-            guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+            guard !number.isCFBoolean else {
                 throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
             }
             
@@ -681,7 +682,7 @@ extension _XMLDecoder {
         
         if let number = Decimal(string: string) as NSDecimalNumber? {
             
-            guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
+            guard !number.isCFBoolean else {
                 throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
             }
             
@@ -820,3 +821,11 @@ extension _XMLDecoder {
     }
 }
 
+extension NSNumber {
+  @_transparent
+  var isCFBoolean: Bool {
+    CFGetTypeID(self) == CFBooleanGetTypeID()
+//    className == "__NSCFBoolean"
+//    number !== kCFBooleanTrue, number !== kCFBooleanFalse
+  }
+}
